@@ -5,6 +5,8 @@
 - `pip install pillow`
 
 
-## run
+## use
 
-`python create.py [my.gif/my.mp4] out 48`
+`python create.py [my.gif/my.mp4] out 0`
+
+last parameter defines status bar cut in pixel, default value is 48.
