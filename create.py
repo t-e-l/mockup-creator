@@ -1,5 +1,6 @@
 from PIL import Image, ImageDraw, ImageSequence
 import io, sys, os
+import pathlib
 #use like : python gif2mock.py [my.gif/my.mp4] out 48
 
 
@@ -18,7 +19,8 @@ def add_corners (im, rad):
     return im
 
 
-os.system("mkdir tmp")
+pathlib.Path('tmp').mkdir(exist_ok=True) 
+pathlib.Path('output').mkdir(exist_ok=True) 
 
 #positions to paste screen and phone
 SCREEN_POS = (257,295)
