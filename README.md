@@ -2,6 +2,7 @@
 
 ## install
 - ffmpeg
+- gifsicle
 - `pip install pillow`
 
 

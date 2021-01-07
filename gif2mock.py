@@ -16,6 +16,7 @@ def add_corners (im, rad):
     im.putalpha (alpha)
     return im
 
+
 #positions to paste screen and phone
 SCREEN_POS = (257,295)
 PHONE_POS = (248,270)
@@ -51,3 +52,5 @@ for frame in ImageSequence.Iterator(im):
 		#save modified frame
 		frames.append(new_frame)
 frames[0].save(sys.argv[2], save_all=True, append_images=frames[1:],loop=0)
+
+os.system("gifsicle -i {} -O3 --colors 256 -o {}".format(sys.argv[2], "optimized_{}".format(sys.argv[2])))
