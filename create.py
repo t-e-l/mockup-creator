@@ -40,8 +40,28 @@ if not ".gif" in image_name:
 #open images
 background = Image.open("bg.png")
 phone = Image.open("phone.png")
+phone_top = Image.open("phone_top.png")
+phone_mid = Image.open("phone_mid.png")
+phone_bot = Image.open("phone_bot.png")
 logo = Image.open("logo.png")
 im = Image.open(image_name)
+w, h = im.size
+
+
+if not h == 1690:
+	phone = Image.new('RGBA', (804, h), (255, 0, 0, 0))
+	phone.paste(phone_top,(0,0),phone_top)
+	middle_height = h-300
+	count = int(middle_height / 50)
+	if not middle_height % 50 == 0:
+		count+=1
+	y = 150
+	while count > 0:
+		phone.paste(phone_mid,(0,y),phone_mid)
+		count-=1
+		y+=50
+	phone.paste(phone_bot,(0,h-150),phone_bot)
+	#phone.save("test_phone.png", "PNG") todo: save phone image for reuse
 #loop over gif
 frames = []
 for frame in ImageSequence.Iterator(im):
