@@ -27,7 +27,6 @@ SCREEN_POS = (257,295)
 PHONE_POS = (248,270)
 LOGO_POS = (217,0)
 
-output_webm = "output/{}.webm".format(sys.argv[2])
 output_mp4 = "output/{}.mp4".format(sys.argv[2])
 image_name = sys.argv[1]
 status_cut = 48
@@ -98,11 +97,5 @@ for frame in ImageSequence.Iterator(im):
 #save gif		
 frames[0].save("tmp/tmp2.gif", save_all=True, append_images=frames[1:],loop=0)
 
-#save webm and mp4
-os.system("ffmpeg -i tmp/tmp2.gif -an -c vp9 -b:v 0 -crf 20 -pass 1 -f webm /dev/null -y")
-os.system("ffmpeg -i tmp/tmp2.gif -an -c vp9 -b:v 0 -crf 20 -pass 2 {} -y".format(output_webm))
-os.system("ffmpeg -i {} -c copy tmp/tmp.mp4 -y".format(output_webm,output_mp4))
-
-#extract first frame and set thumbnail
-os.system('ffmpeg -i tmp/tmp2.gif -vf "select=eq(n\,0)" -q:v 3 tmp/thumbnail.png -y')
-os.system('ffmpeg -i tmp/tmp.mp4 -i tmp/thumbnail.png -map 1 -map 0 -c copy -disposition:0 attached_pic {0} -y '.format(output_mp4))
+#save webm
+os.system('ffmpeg -i tmp/tmp2.gif -movflags faststart -pix_fmt yuv420p -vf "scale=trunc(iw/2)*2:trunc(ih/2)*2" {}'.format(output_mp4))
