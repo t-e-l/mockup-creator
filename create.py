@@ -49,17 +49,28 @@ w, h = im.size
 
 
 if not h == 1690:
+	#recenter phone and screen
+	diff = int((1690 -h)/2)
+	SCREEN_POS=(SCREEN_POS[0],SCREEN_POS[1]+diff)
+	PHONE_POS=(PHONE_POS[0],PHONE_POS[1]+diff)
+	#create empty phone image
 	phone = Image.new('RGBA', (804, h), (255, 0, 0, 0))
+	#paste top part
 	phone.paste(phone_top,(0,0),phone_top)
+	#calculate how much middle parts
 	middle_height = h-300
+
+
 	count = int(middle_height / 50)
 	if not middle_height % 50 == 0:
 		count+=1
 	y = 150
+	#paste middle parts
 	while count > 0:
 		phone.paste(phone_mid,(0,y),phone_mid)
 		count-=1
 		y+=50
+	#paste bottom parts over last middle part, so everything % 50 != works
 	phone.paste(phone_bot,(0,h-150),phone_bot)
 	#phone.save("test_phone.png", "PNG") todo: save phone image for reuse
 #loop over gif
