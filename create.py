@@ -23,7 +23,7 @@ INPUT_FILE = "input.mp4"
 OUTPUT_FILE = "output.mp4"
 STATUS_CUT = 48
 BACKGROUND_COLOR = "#364a39"
-
+VERBOOSE = "&>/dev/null"
 #open images
 background = Image.open("bg.png")
 phone = Image.open("phone.png")
@@ -34,7 +34,7 @@ logo = Image.open("tel.png")
 
 
 try:
-  opts, args = getopt.getopt(sys.argv[1:],"i:o:c:b:",["ifile=","ofile="])
+  opts, args = getopt.getopt(sys.argv[1:],"i:o:c:b:v",["ifile=","ofile="])
 except getopt.GetoptError:
   print ("wrong parameters")
   sys.exit(2)
@@ -51,10 +51,11 @@ for opt, arg in opts:
 			BACKGROUND_COLOR = "#{}".format(BACKGROUND_COLOR)
 		if not BACKGROUND_COLOR == "#364a39":
 			background = Image.new('RGBA', (1300, 2000), BACKGROUND_COLOR)
-			background.show()
+	elif opt == "-v":
+		VERBOOSE = ""
 
 print("=> input file: {}".format(INPUT_FILE))
-print("=> output file: {}".format(OUTPUT_FILE))
+print("=> output file: output/{}.mp4".format(OUTPUT_FILE))
 print("=> status cut: {} px".format(STATUS_CUT))
 print("=> background color: {}".format(BACKGROUND_COLOR))
 
@@ -72,10 +73,10 @@ output_mp4 = "output/{}.mp4".format(OUTPUT_FILE)
 image_name = INPUT_FILE
 #convert to gif if not already 
 if not ".gif" in image_name:
-	print("=> converting your input to gif first")
+	print("=> converting input to gif")
 	#scaling to 780 width to fit template
 	#for other heights adjust cutout value
-	os.system('ffmpeg -i {} -vf "fps=10,scale=780:-1:flags=lanczos,split[s0][s1];[s0]palettegen[p];[s1][p]paletteuse" -loop 0 tmp/tmp.gif -y'.format(image_name))
+	os.system('ffmpeg -i {} -vf "fps=10,scale=780:-1:flags=lanczos,split[s0][s1];[s0]palettegen[p];[s1][p]paletteuse" -loop 0 tmp/tmp.gif -y {}'.format(image_name,VERBOOSE))
 	image_name = "tmp/tmp.gif"
 
 
@@ -89,20 +90,22 @@ w, h = im.size
 
 
 #dynamic phone template creation
-if not h == 1690:
+real_size = h -STATUS_CUT
+if not real_size == 1642:
+	print("=> dynamically creating phone image")
 	#recenter phone and screen
-	diff = int((1690 -h)/2)
+	diff = int((1642 -real_size)/2)
 	SCREEN_POS=(SCREEN_POS[0],SCREEN_POS[1]+diff)
 	PHONE_POS=(PHONE_POS[0],PHONE_POS[1]+diff)
 	#create empty phone image
-	phone = Image.new('RGBA', (804, h), (255, 0, 0, 0))
+	phone = Image.new('RGBA', (804, real_size+50), (255, 0, 0, 0))
 	#paste top part
 	phone.paste(phone_top,(0,0),phone_top)
 	#calculate how much middle parts
-	middle_height = h-300
+	middle_height = real_size -300
 
 
-	count = int(middle_height / 50)
+	count = int(middle_height / 50)+1
 	if not middle_height % 50 == 0:
 		count+=1
 	y = 150
@@ -112,10 +115,10 @@ if not h == 1690:
 		count-=1
 		y+=50
 	#paste bottom parts over last middle part, so everything % 50 != works
-	phone.paste(phone_bot,(0,h-150),phone_bot)
+	phone.paste(phone_bot,(0,real_size -100),phone_bot)
 	#phone.save("test_phone.png", "PNG") todo: save phone image for reuse
 
-
+print("=> creating gif")
 #loop over gif
 frames = []
 for frame in ImageSequence.Iterator(im):
@@ -126,7 +129,7 @@ for frame in ImageSequence.Iterator(im):
 		w, h = frame.size
 		frame = frame.crop((0,STATUS_CUT, w,h))
 	#cut round corners of the screen
-	frame = add_corners(frame.convert("RGBA"),50)
+	frame = add_corners(frame.convert("RGBA"),80)
 	#paste screen, over it phone
 	new_frame.paste(frame,SCREEN_POS,frame)
 	new_frame.paste(phone,PHONE_POS, phone)
@@ -137,5 +140,7 @@ for frame in ImageSequence.Iterator(im):
 #save gif		
 frames[0].save("tmp/tmp2.gif", save_all=True, append_images=frames[1:],loop=0)
 
+print("=> creating mp4")
 #save webm
-os.system('ffmpeg -i tmp/tmp2.gif -movflags faststart -pix_fmt yuv420p -vf "scale=trunc(iw/2)*2:trunc(ih/2)*2" {} -y'.format(output_mp4))
+os.system('ffmpeg -i tmp/tmp2.gif -movflags faststart -pix_fmt yuv420p -vf "scale=trunc(iw/2)*2:trunc(ih/2)*2" {} -y {}'.format(output_mp4,VERBOOSE))
+print("=> done!")
