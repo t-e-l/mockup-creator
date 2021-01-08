@@ -1,5 +1,5 @@
 from PIL import Image, ImageDraw, ImageSequence
-import io, sys, os
+import io, sys, os, getopt
 import pathlib
 #use like : python gif2mock.py [my.gif/my.mp4] out 48
 
@@ -19,26 +19,10 @@ def add_corners (im, rad):
     return im
 
 
-pathlib.Path('tmp').mkdir(exist_ok=True) 
-pathlib.Path('output').mkdir(exist_ok=True) 
-
-#positions to paste screen and phone
-SCREEN_POS = (257,295)
-PHONE_POS = (248,270)
-LOGO_POS = (217,0)
-
-output_mp4 = "output/{}.mp4".format(sys.argv[2])
-image_name = sys.argv[1]
-status_cut = 48
-if len(sys.argv) > 3:
-	status_cut = int(sys.argv[3])
-#convert to gif if not already 
-if not ".gif" in image_name:
-	print("=> converting your input to gif first")
-	#scaling to 780 width to fit template
-	#for other heights adjust cutout value
-	os.system('ffmpeg -i {} -vf "fps=10,scale=780:-1:flags=lanczos,split[s0][s1];[s0]palettegen[p];[s1][p]paletteuse" -loop 0 tmp/tmp.gif -y'.format(image_name))
-	image_name = "tmp/tmp.gif"
+INPUT_FILE = "input.mp4"
+OUTPUT_FILE = "output.mp4"
+STATUS_CUT = 48
+BACKGROUND_COLOR = "#364a39"
 
 #open images
 background = Image.open("bg.png")
@@ -47,6 +31,53 @@ phone_top = Image.open("phone_top.png")
 phone_mid = Image.open("phone_mid.png")
 phone_bot = Image.open("phone_bot.png")
 logo = Image.open("tel.png")
+
+
+try:
+  opts, args = getopt.getopt(sys.argv[1:],"i:o:c:b:",["ifile=","ofile="])
+except getopt.GetoptError:
+  print ("wrong parameters")
+  sys.exit(2)
+for opt, arg in opts:
+	if opt == "-i":
+		INPUT_FILE = arg
+	elif opt == "-o":
+		OUTPUT_FILE = arg
+	elif opt == "-c":
+		STATUS_CUT = int(arg)
+	elif opt == "-b":
+		BACKGROUND_COLOR = arg
+		if not "#" in BACKGROUND_COLOR:
+			BACKGROUND_COLOR = "#{}".format(BACKGROUND_COLOR)
+		if not BACKGROUND_COLOR == "#364a39":
+			background = Image.new('RGBA', (1300, 2000), BACKGROUND_COLOR)
+			background.show()
+
+print("=> input file: {}".format(INPUT_FILE))
+print("=> output file: {}".format(OUTPUT_FILE))
+print("=> status cut: {} px".format(STATUS_CUT))
+print("=> background color: {}".format(BACKGROUND_COLOR))
+
+
+
+pathlib.Path('tmp').mkdir(exist_ok=True) 
+pathlib.Path('output').mkdir(exist_ok=True) 
+
+#positions to paste screen and phone
+SCREEN_POS = (257,295)
+PHONE_POS = (248,270)
+LOGO_POS = (217,0)
+
+output_mp4 = "output/{}.mp4".format(OUTPUT_FILE)
+image_name = INPUT_FILE
+#convert to gif if not already 
+if not ".gif" in image_name:
+	print("=> converting your input to gif first")
+	#scaling to 780 width to fit template
+	#for other heights adjust cutout value
+	os.system('ffmpeg -i {} -vf "fps=10,scale=780:-1:flags=lanczos,split[s0][s1];[s0]palettegen[p];[s1][p]paletteuse" -loop 0 tmp/tmp.gif -y'.format(image_name))
+	image_name = "tmp/tmp.gif"
+
 
 wl, hl = logo.size
 
@@ -57,7 +88,7 @@ im = Image.open(image_name)
 w, h = im.size
 
 
-
+#dynamic phone template creation
 if not h == 1690:
 	#recenter phone and screen
 	diff = int((1690 -h)/2)
@@ -83,15 +114,17 @@ if not h == 1690:
 	#paste bottom parts over last middle part, so everything % 50 != works
 	phone.paste(phone_bot,(0,h-150),phone_bot)
 	#phone.save("test_phone.png", "PNG") todo: save phone image for reuse
+
+
 #loop over gif
 frames = []
 for frame in ImageSequence.Iterator(im):
 	#copy background
 	new_frame = background.copy()
 	#crop status bar
-	if status_cut > 0:
+	if STATUS_CUT > 0:
 		w, h = frame.size
-		frame = frame.crop((0,status_cut, w,h))
+		frame = frame.crop((0,STATUS_CUT, w,h))
 	#cut round corners of the screen
 	frame = add_corners(frame.convert("RGBA"),50)
 	#paste screen, over it phone
