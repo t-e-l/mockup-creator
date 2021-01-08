@@ -46,9 +46,16 @@ phone = Image.open("phone.png")
 phone_top = Image.open("phone_top.png")
 phone_mid = Image.open("phone_mid.png")
 phone_bot = Image.open("phone_bot.png")
-logo = Image.open("logo.png")
+logo = Image.open("tel.png")
+
+wl, hl = logo.size
+
+if not wl == 865:
+	LOGO_POS = (LOGO_POS[0]+int((865-wl)/2),LOGO_POS[1])
+
 im = Image.open(image_name)
 w, h = im.size
+
 
 
 if not h == 1690:
@@ -98,4 +105,4 @@ for frame in ImageSequence.Iterator(im):
 frames[0].save("tmp/tmp2.gif", save_all=True, append_images=frames[1:],loop=0)
 
 #save webm
-os.system('ffmpeg -i tmp/tmp2.gif -movflags faststart -pix_fmt yuv420p -vf "scale=trunc(iw/2)*2:trunc(ih/2)*2" {}'.format(output_mp4))
+os.system('ffmpeg -i tmp/tmp2.gif -movflags faststart -pix_fmt yuv420p -vf "scale=trunc(iw/2)*2:trunc(ih/2)*2" {} -y'.format(output_mp4))
