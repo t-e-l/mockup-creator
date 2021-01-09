@@ -1,7 +1,6 @@
-from PIL import Image, ImageDraw, ImageSequence
+from PIL import Image, ImageDraw, ImageSequence, ImageFont
 import io, sys, os, getopt
 import pathlib
-#use like : python gif2mock.py [my.gif/my.mp4] out 48
 
 
 #https://stackoverflow.com/a/11291419
@@ -22,8 +21,10 @@ def add_corners (im, rad):
 INPUT_FILE = "input.mp4"
 OUTPUT_FILE = "output.mp4"
 STATUS_CUT = 48
-BACKGROUND_COLOR = "#364a39"
+BACKGROUND_COLOR = "#1f1f1f"
 VERBOOSE = "&>/dev/null"
+URL="t-e-l.github.io"
+VERSION="0.1"
 #open images
 background = Image.open("bg.png")
 phone = Image.open("phone.png")
@@ -121,6 +122,7 @@ if not real_size == 1642:
 print("=> creating gif")
 #loop over gif
 frames = []
+first_frame = None
 for frame in ImageSequence.Iterator(im):
 	#copy background
 	new_frame = background.copy()
@@ -134,13 +136,27 @@ for frame in ImageSequence.Iterator(im):
 	new_frame.paste(frame,SCREEN_POS,frame)
 	new_frame.paste(phone,PHONE_POS, phone)
 	new_frame.paste(logo,LOGO_POS,logo)
+	draw = ImageDraw.Draw(new_frame)
+	font = ImageFont.truetype("font.ttf", 50)
+	font2 = ImageFont.truetype("font.ttf",120)
+	version_str = "v{}".format(VERSION)
+	textw, texth = draw.textsize(version_str,font)
+	w, h = new_frame.size
+	draw.text((w-textw, 5),version_str,"#c0b18b",font=font)
 	#save modified frame
+	draw.text((200, h-250),URL,"#c0b18b",font=font2, stroke=10,stroke_color=(0, 0, 0))
+	if first_frame == None:
+		first_frame = new_frame
 	frames.append(new_frame)
-
 #save gif		
 frames[0].save("tmp/tmp2.gif", save_all=True, append_images=frames[1:],loop=0)
 
 print("=> creating mp4")
 #save webm
-os.system('ffmpeg -i tmp/tmp2.gif -movflags faststart -pix_fmt yuv420p -vf "scale=trunc(iw/2)*2:trunc(ih/2)*2" {} -y {}'.format(output_mp4,VERBOOSE))
+os.system('ffmpeg -i tmp/tmp2.gif -movflags faststart -pix_fmt yuv420p -vf "scale=trunc(iw/2)*2:trunc(ih/2)*2" tmp/tmp.mp4 -y {}'.format(VERBOOSE))
+
+
+first_frame.save("tmp/thumbnail.png")
+os.system('ffmpeg -i tmp/tmp.mp4 -i tmp/thumbnail.png -map 0 -map 1 -c copy -c:v:1 png -disposition:v:1 attached_pic {} -y {}'.format(output_mp4,VERBOOSE))
+
 print("=> done!")
