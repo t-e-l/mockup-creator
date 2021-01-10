@@ -144,7 +144,14 @@ for frame in ImageSequence.Iterator(im):
 	w, h = new_frame.size
 	draw.text((w-textw, 5),version_str,"#c0b18b",font=font)
 	#save modified frame
-	draw.text((200, h-250),URL,"#c0b18b",font=font2, stroke=10,stroke_color=(0, 0, 0))
+	txt = Image.new('RGBA', new_frame.size, (255,255,255,0))
+
+	d = ImageDraw.Draw(txt)    
+
+
+
+	d.text((200, h-250),URL,(192, 177, 139,80),font=font2, stroke=10,stroke_color=(0, 0, 0))
+	new_frame = Image.alpha_composite(new_frame, txt)    
 	if first_frame == None:
 		first_frame = new_frame
 	frames.append(new_frame)
@@ -153,10 +160,10 @@ frames[0].save("tmp/tmp2.gif", save_all=True, append_images=frames[1:],loop=0)
 
 print("=> creating mp4")
 #save webm
-os.system('ffmpeg -i tmp/tmp2.gif -movflags faststart -pix_fmt yuv420p -vf "scale=trunc(iw/2)*2:trunc(ih/2)*2" tmp/tmp.mp4 -y {}'.format(VERBOOSE))
+os.system('ffmpeg -i tmp/tmp2.gif -movflags faststart -pix_fmt yuv420p -vf "scale=trunc(iw/2)*2:trunc(ih/2)*2" {} -y {}'.format(output_mp4,VERBOOSE))
 
 
-first_frame.save("tmp/thumbnail.png")
-os.system('ffmpeg -i tmp/tmp.mp4 -i tmp/thumbnail.png -map 0 -map 1 -c copy -c:v:1 png -disposition:v:1 attached_pic {} -y {}'.format(output_mp4,VERBOOSE))
+#first_frame.save("tmp/thumbnail.png")
+#os.system('ffmpeg -i tmp/tmp.mp4 -i tmp/thumbnail.png -map 0 -map 1 -c copy -c:v:1 png -disposition:v:1 attached_pic {} -y {}'.format(output_mp4,VERBOOSE))
 
 print("=> done!")
