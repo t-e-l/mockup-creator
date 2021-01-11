@@ -148,7 +148,7 @@ for frame in ImageSequence.Iterator(im):
 
 	img_txt = Image.new('RGBA', (h,w), (255,255,255,0))
 	draw_txt = ImageDraw.Draw(img_txt)
-	draw_txt.text(((h-(textw2))/2,0), URL, font=font2, fill="#c0b18b")
+	draw_txt.text(((h-(textw2))/2,240-texth2), URL, font=font2, fill="#c0b18b")
 	#draw_txt.text((0, 0), URL,(192, 177, 139,80),font=font2)
 	t = img_txt.rotate(90, expand=1)
 	#txt = Image.new('RGBA', new_frame.size, (255,255,255,0))
