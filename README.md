@@ -7,6 +7,10 @@
 
 ## use
 
-`python create.py [my.gif/my.mp4] out 0`
+`python create.py -i input.mp4 -o output -b 1f1f1f -c 0`
 
-last parameter defines status bar cut in pixel, default value is 48.
+`-i`: input file gif/mp4
+`-o` : output filename
+`-b`: background color
+`-c`: statusbar cutout in pixel
+`-v`: verbose

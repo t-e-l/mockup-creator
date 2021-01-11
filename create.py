@@ -141,17 +141,20 @@ for frame in ImageSequence.Iterator(im):
 	font2 = ImageFont.truetype("font.ttf",120)
 	version_str = "v{}".format(VERSION)
 	textw, texth = draw.textsize(version_str,font)
+	textw2, texth2 = draw.textsize(URL,font2)
 	w, h = new_frame.size
 	draw.text((w-textw, 5),version_str,"#c0b18b",font=font)
 	#save modified frame
-	txt = Image.new('RGBA', new_frame.size, (255,255,255,0))
 
-	d = ImageDraw.Draw(txt)    
-
-
-
-	d.text((200, h-250),URL,(192, 177, 139,80),font=font2, stroke=10,stroke_color=(0, 0, 0))
-	new_frame = Image.alpha_composite(new_frame, txt)    
+	img_txt = Image.new('RGBA', (h,w), (255,255,255,0))
+	draw_txt = ImageDraw.Draw(img_txt)
+	draw_txt.text(((h-(textw2))/2,0), URL, font=font2, fill="#c0b18b")
+	#draw_txt.text((0, 0), URL,(192, 177, 139,80),font=font2)
+	t = img_txt.rotate(90, expand=1)
+	#txt = Image.new('RGBA', new_frame.size, (255,255,255,0))
+	#d = ImageDraw.Draw(txt)    
+	#d.text((200, h-250),URL,(192, 177, 139,80),font=font2, stroke=10,stroke_color=(0, 0, 0))
+	new_frame = Image.alpha_composite(new_frame, t)    
 	if first_frame == None:
 		first_frame = new_frame
 	frames.append(new_frame)
